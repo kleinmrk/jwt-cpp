@@ -928,7 +928,7 @@ namespace jwt {
 			 * \return ECDSA signature for the given data
 			 */
 			std::string sign(const std::string& data, std::error_code& ec) const {
-				ec.clear();
+				ec.clear();//some minor change
 				const std::string hash = generate_hash(data, ec);
 				if (ec) return {};
 
