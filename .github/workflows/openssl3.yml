@@ -1,0 +1,36 @@
+name: OpenSSL CMake CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    paths:
+      - "CMakeLists.txt"
+      - "include/jwt-cpp/**"
+      - "tests/cmake/**"
+      - ".github/actions/**"
+      - ".github/workflows/cmake.yml"
+
+jobs:
+  with-libressl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@latest
+      - name: install libressl
+        uses: ./.github/actions/install/libressl
+
+      - name: setup
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DJWT_SSL_LIBRARY:STRING="LibreSSL" -DJWT_BUILD_EXAMPLES=OFF
+          sudo make install
+
+      - name: test
+        run: |
+          cd tests/cmake
+          cmake . -DCMAKE_PREFIX_PATH=/usr/local/cmake -DCMAKE_MODULE_PATH=../../cmake -DTEST:STRING="libressl-is-used"
+          cmake --build .
+
