@@ -2,7 +2,7 @@ name: OpenSSL CMake CI
 
 on:
   push:
-    branches: [master]
+    branches: ["*"]
   pull_request:
     branches: [master]
     paths:
