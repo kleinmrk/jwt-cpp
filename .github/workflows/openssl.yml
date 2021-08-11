@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@latest
       - uses: ./.github/actions/install/gtest
-      - uses: ./.github/actions/install/openssl3
+      - uses: ./.github/actions/install/openssl
         with:
           version: ${{ matrix.openssl }}
 
