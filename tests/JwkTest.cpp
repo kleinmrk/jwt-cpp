@@ -89,8 +89,8 @@ TEST(JwkTest, CustomAlgorithm) {
 		void verify(const std::string& data, const std::string& sig, std::error_code& ec) {}
 	};
 
-	auto my_verification_algorithms = jwt::default_verification_algorithms;
-	my_verification_algorithms.insert_or_assign(std::string("my-custom-alg"), [](const jwt::key&) {
+	jwt::algorithm_db my_verification_algorithms;
+	my_verification_algorithms.register_algorithm("my-custom-alg", [](const jwt::key&) {
 		return std::make_unique<jwt::algo<custom_verification_algorithm>>(custom_verification_algorithm());
 	});
 	auto verifier = jwt::verifier<jwt::default_clock, jwt::traits::kazuho_picojson>(jwt::default_clock(),

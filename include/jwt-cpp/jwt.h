@@ -3501,73 +3501,94 @@ namespace jwt {
 		}
 	};
 
-	using algorithm_builder = std::map<std::string, std::function<std::unique_ptr<algo_base>(const key&)>>;
-	static const algorithm_builder default_verification_algorithms = {
-		{"RS256",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::rs256>>(
-				 new algo<jwt::algorithm::rs256>(jwt::algorithm::rs256(key.get_asymmetric_key())));
-		 }},
-		{"RS384",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::rs384>>(
-				 new algo<jwt::algorithm::rs384>(jwt::algorithm::rs384(key.get_asymmetric_key())));
-		 }},
-		{"RS512",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::rs512>>(
-				 new algo<jwt::algorithm::rs512>(jwt::algorithm::rs512(key.get_asymmetric_key())));
-		 }},
-		{"PS256",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::ps256>>(
-				 new algo<jwt::algorithm::ps256>(jwt::algorithm::ps256(key.get_asymmetric_key())));
-		 }},
-		{"PS384",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::ps384>>(
-				 new algo<jwt::algorithm::ps384>(jwt::algorithm::ps384(key.get_asymmetric_key())));
-		 }},
-		{"PS512",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::ps512>>(
-				 new algo<jwt::algorithm::ps512>(jwt::algorithm::ps512(key.get_asymmetric_key())));
-		 }},
-		{"ES256",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::es256>>(
-				 new algo<jwt::algorithm::es256>(jwt::algorithm::es256(key.get_asymmetric_key())));
-		 }},
-		{"ES384",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::es384>>(
-				 new algo<jwt::algorithm::es384>(jwt::algorithm::es384(key.get_asymmetric_key())));
-		 }},
-		{"ES512",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::es512>>(
-				 new algo<jwt::algorithm::es512>(jwt::algorithm::es512(key.get_asymmetric_key())));
-		 }},
-		{"ES256K",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::es256k>>(
-				 new algo<jwt::algorithm::es256k>(jwt::algorithm::es256k(key.get_asymmetric_key())));
-		 }},
-		{"HS256",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::hs256>>(
-				 new algo<jwt::algorithm::hs256>(jwt::algorithm::hs256(key.get_symmetric_key())));
-		 }},
-		{"HS384",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::hs384>>(
-				 new algo<jwt::algorithm::hs384>(jwt::algorithm::hs384(key.get_symmetric_key())));
-		 }},
-		{"HS512",
-		 [](const key& key) {
-			 return std::unique_ptr<algo<jwt::algorithm::hs512>>(
-				 new algo<jwt::algorithm::hs512>(jwt::algorithm::hs512(key.get_symmetric_key())));
-		 }},
+	struct algorithm_db {
+		using builder_fn = std::function<std::unique_ptr<algo_base>(const key&)>;
+		using algname_to_builder_fn = std::map<std::string, builder_fn>;
+		enum type { empty, basic };
+
+		algorithm_db() : algorithm_db(empty) {}
+		algorithm_db(type t) {
+			if (t == empty) { supported_algorithms.clear(); }
+		}
+
+		builder_fn create_algorithm(const std::string& name) const {
+			const auto algorithm = supported_algorithms.find(name);
+			if (algorithm != supported_algorithms.end()) { return algorithm->second; }
+			return nullptr;
+		}
+
+		void register_algorithm(const std::string& alg_name, builder_fn build_fn) {
+			supported_algorithms.insert_or_assign(alg_name, build_fn);
+		}
+
+	private:
+		algname_to_builder_fn supported_algorithms = {
+			{"RS256",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::rs256>>(
+					 new algo<jwt::algorithm::rs256>(jwt::algorithm::rs256(key.get_asymmetric_key())));
+			 }},
+			{"RS384",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::rs384>>(
+					 new algo<jwt::algorithm::rs384>(jwt::algorithm::rs384(key.get_asymmetric_key())));
+			 }},
+			{"RS512",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::rs512>>(
+					 new algo<jwt::algorithm::rs512>(jwt::algorithm::rs512(key.get_asymmetric_key())));
+			 }},
+			{"PS256",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::ps256>>(
+					 new algo<jwt::algorithm::ps256>(jwt::algorithm::ps256(key.get_asymmetric_key())));
+			 }},
+			{"PS384",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::ps384>>(
+					 new algo<jwt::algorithm::ps384>(jwt::algorithm::ps384(key.get_asymmetric_key())));
+			 }},
+			{"PS512",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::ps512>>(
+					 new algo<jwt::algorithm::ps512>(jwt::algorithm::ps512(key.get_asymmetric_key())));
+			 }},
+			{"ES256",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::es256>>(
+					 new algo<jwt::algorithm::es256>(jwt::algorithm::es256(key.get_asymmetric_key())));
+			 }},
+			{"ES384",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::es384>>(
+					 new algo<jwt::algorithm::es384>(jwt::algorithm::es384(key.get_asymmetric_key())));
+			 }},
+			{"ES512",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::es512>>(
+					 new algo<jwt::algorithm::es512>(jwt::algorithm::es512(key.get_asymmetric_key())));
+			 }},
+			{"ES256K",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::es256k>>(
+					 new algo<jwt::algorithm::es256k>(jwt::algorithm::es256k(key.get_asymmetric_key())));
+			 }},
+			{"HS256",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::hs256>>(
+					 new algo<jwt::algorithm::hs256>(jwt::algorithm::hs256(key.get_symmetric_key())));
+			 }},
+			{"HS384",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::hs384>>(
+					 new algo<jwt::algorithm::hs384>(jwt::algorithm::hs384(key.get_symmetric_key())));
+			 }},
+			{"HS512",
+			 [](const key& key) {
+				 return std::unique_ptr<algo<jwt::algorithm::hs512>>(
+					 new algo<jwt::algorithm::hs512>(jwt::algorithm::hs512(key.get_symmetric_key())));
+			 }},
+		};
 	};
 
 	/**
@@ -3597,15 +3618,9 @@ namespace jwt {
 		size_t default_leeway = 0;
 		/// Instance of clock type
 		Clock clock;
-		algorithm_builder supported_algorithms;
+		algorithm_db supported_algorithms;
 		/// Supported algorithms
 		std::unordered_map<std::string, std::shared_ptr<algo_base>> algs;
-		using alg_name = std::string;
-		using alg_list = std::vector<alg_name>;
-		using algorithms = std::unordered_map<std::string, alg_list>;
-		algorithms supported_alg = {{"RSA", {"RS256", "RS384", "RS512", "PS256", "PS384", "PS512"}},
-									{"EC", {"ES256", "ES384", "ES512", "ES256K"}},
-									{"oct", {"HS256", "HS384", "HS512"}}};
 
 		typedef std::vector<jwt::jwk<json_traits>> key_list;
 		/// https://datatracker.ietf.org/doc/html/rfc7517#section-4.5 - kid to keys
@@ -3621,34 +3636,21 @@ namespace jwt {
 			}
 		}
 
-		bool is_valid_combination(const jwt::jwk<json_traits>& key, const std::string& alg_name) const {
-			const alg_list& x = supported_alg.find(key.get_key_type())->second;
-			return std::find(x.cbegin(), x.cend(), alg_name) != x.cend();
+		bool is_valid_combination(const std::string& key_type, const std::string& alg_name) const {
+			// TODO:mk check whether key type can be used with the algorithm
+			return true;
 		}
 
-		inline std::unique_ptr<algo_base> from_key_and_alg(const jwt::jwk<json_traits>& key,
-														   const std::string& alg_name, std::error_code& ec) const {
+		std::unique_ptr<algo_base> from_key_and_alg(const jwt::jwk<json_traits>& key, const std::string& alg_name,
+													std::error_code& ec) const {
 			ec.clear();
-			algorithms::const_iterator it = supported_alg.find(key.get_key_type());
-			if (it == supported_alg.end()) {
+			auto create = supported_algorithms.create_algorithm(alg_name);
+			if (create == nullptr) {
 				ec = error::token_verification_error::wrong_algorithm;
 				return nullptr;
 			}
 
-			const alg_list& supported_jwt_algorithms = it->second;
-			if (std::find(supported_jwt_algorithms.begin(), supported_jwt_algorithms.end(), alg_name) ==
-				supported_jwt_algorithms.end()) {
-				ec = error::token_verification_error::wrong_algorithm;
-				return nullptr;
-			}
-
-			algorithm_builder::const_iterator alg = supported_algorithms.find(alg_name);
-			if (alg == supported_algorithms.end()) {
-				ec = error::token_verification_error::wrong_algorithm;
-				return nullptr;
-			}
-
-			return alg->second.operator()(key.get_key());
+			return create(key.get_key());
 		}
 
 	public:
@@ -3656,9 +3658,9 @@ namespace jwt {
 		 * Constructor for building a new verifier instance
 		 * \param c Clock instance
 		 */
-		explicit verifier(Clock c) : verifier(c, default_verification_algorithms) {}
+		explicit verifier(Clock c) : verifier(c, algorithm_db(algorithm_db::basic)) {}
 
-		verifier(Clock c, algorithm_builder algorithms) : clock(c), supported_algorithms(algorithms) {
+		verifier(Clock c, algorithm_db algorithms) : clock(c), supported_algorithms(algorithms) {
 			claims["exp"] = [](const verify_ops::verify_context<json_traits>& ctx, std::error_code& ec) {
 				if (!ctx.jwt.has_expires_at()) return;
 				auto exp = ctx.jwt.get_expires_at();
@@ -3857,7 +3859,7 @@ namespace jwt {
 			if (key_set_it != keys.end()) {
 				const key_list& keys = key_set_it->second;
 				for (const auto& key : keys) {
-					if (is_valid_combination(key, algo)) {
+					if (is_valid_combination(key.get_key_type(), algo)) {
 						key_found = true;
 						auto alg = from_key_and_alg(key, algo, ec);
 						alg->verify(data, sig, ec);
