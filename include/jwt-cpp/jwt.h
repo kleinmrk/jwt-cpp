@@ -3525,68 +3525,56 @@ namespace jwt {
 		algname_to_builder_fn supported_algorithms = {
 			{"RS256",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::rs256>>(
-					 new algo<jwt::algorithm::rs256>(jwt::algorithm::rs256(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::rs256>>(jwt::algorithm::rs256(key.get_asymmetric_key()));
 			 }},
 			{"RS384",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::rs384>>(
-					 new algo<jwt::algorithm::rs384>(jwt::algorithm::rs384(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::rs384>>(jwt::algorithm::rs384(key.get_asymmetric_key()));
 			 }},
 			{"RS512",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::rs512>>(
-					 new algo<jwt::algorithm::rs512>(jwt::algorithm::rs512(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::rs512>>(jwt::algorithm::rs512(key.get_asymmetric_key()));
 			 }},
 			{"PS256",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::ps256>>(
-					 new algo<jwt::algorithm::ps256>(jwt::algorithm::ps256(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::ps256>>(jwt::algorithm::ps256(key.get_asymmetric_key()));
 			 }},
 			{"PS384",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::ps384>>(
-					 new algo<jwt::algorithm::ps384>(jwt::algorithm::ps384(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::ps384>>(jwt::algorithm::ps384(key.get_asymmetric_key()));
 			 }},
 			{"PS512",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::ps512>>(
-					 new algo<jwt::algorithm::ps512>(jwt::algorithm::ps512(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::ps512>>(jwt::algorithm::ps512(key.get_asymmetric_key()));
 			 }},
 			{"ES256",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::es256>>(
-					 new algo<jwt::algorithm::es256>(jwt::algorithm::es256(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::es256>>(jwt::algorithm::es256(key.get_asymmetric_key()));
 			 }},
 			{"ES384",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::es384>>(
-					 new algo<jwt::algorithm::es384>(jwt::algorithm::es384(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::es384>>(jwt::algorithm::es384(key.get_asymmetric_key()));
 			 }},
 			{"ES512",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::es512>>(
-					 new algo<jwt::algorithm::es512>(jwt::algorithm::es512(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::es512>>(jwt::algorithm::es512(key.get_asymmetric_key()));
 			 }},
 			{"ES256K",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::es256k>>(
-					 new algo<jwt::algorithm::es256k>(jwt::algorithm::es256k(key.get_asymmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::es256k>>(
+					 jwt::algorithm::es256k(key.get_asymmetric_key()));
 			 }},
 			{"HS256",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::hs256>>(
-					 new algo<jwt::algorithm::hs256>(jwt::algorithm::hs256(key.get_symmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::hs256>>(jwt::algorithm::hs256(key.get_symmetric_key()));
 			 }},
 			{"HS384",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::hs384>>(
-					 new algo<jwt::algorithm::hs384>(jwt::algorithm::hs384(key.get_symmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::hs384>>(jwt::algorithm::hs384(key.get_symmetric_key()));
 			 }},
 			{"HS512",
 			 [](const key& key) {
-				 return std::unique_ptr<algo<jwt::algorithm::hs512>>(
-					 new algo<jwt::algorithm::hs512>(jwt::algorithm::hs512(key.get_symmetric_key())));
+				 return std::make_unique<algo<jwt::algorithm::hs512>>(jwt::algorithm::hs512(key.get_symmetric_key()));
 			 }},
 		};
 	};
