@@ -3425,10 +3425,10 @@ namespace jwt {
 		template<typename Decode>
 		static helper::evp_pkey_handle build_rsa_key(const details::map_of_claims<json_traits>& claims,
 													 Decode&& decode) {
-			EVP_PKEY* evp_key = nullptr;
 			auto n = jwt::helper::raw2bn(decode(claims.get_claim("n").as_string()));
 			auto e = jwt::helper::raw2bn(decode(claims.get_claim("e").as_string()));
 #ifdef JWT_OPENSSL_3_0
+			EVP_PKEY* evp_key = nullptr;
 			// https://www.openssl.org/docs/manmaster/man7/EVP_PKEY-RSA.html
 			// see https://www.openssl.org/docs/man3.0/man3/EVP_PKEY_fromdata.html
 			// and https://stackoverflow.com/questions/68465716/how-to-properly-create-an-rsa-key-from-raw-data-in-openssl-3-0-in-c-language
@@ -3438,25 +3438,39 @@ namespace jwt {
 
 			std::unique_ptr<OSSL_PARAM_BLD, decltype(&OSSL_PARAM_BLD_free)> params_build(OSSL_PARAM_BLD_new(),
 																						 OSSL_PARAM_BLD_free);
-			OSSL_PARAM_BLD_push_BN(params_build.get(), "n", n.get());
-			OSSL_PARAM_BLD_push_BN(params_build.get(), "e", e.get());
+			if (!params_build) { throw std::runtime_error("OSSL_PARAM_BLD_new failed"); }
+			if (OSSL_PARAM_BLD_push_BN(params_build.get(), "n", n.get()) != 1) {
+				throw std::runtime_error("OSSL_PARAM_BLD_push_BN failed");
+			}
+			if (OSSL_PARAM_BLD_push_BN(params_build.get(), "e", e.get()) != 1) {
+				throw std::runtime_error("OSSL_PARAM_BLD_push_BN failed");
+			}
 
 			std::unique_ptr<OSSL_PARAM, decltype(&OSSL_PARAM_free)> params(OSSL_PARAM_BLD_to_param(params_build.get()),
 																		   OSSL_PARAM_free);
-			EVP_PKEY_fromdata_init(ctx.get());
-			EVP_PKEY_fromdata(ctx.get(), &evp_key, EVP_PKEY_PUBLIC_KEY, params.get());
+			if (!params) { throw std::runtime_error("OSSL_PARAM_BLD_to_param failed"); }
+			if (EVP_PKEY_fromdata_init(ctx.get()) != 1) { throw std::runtime_error("EVP_PKEY_fromdata_init failed"); }
+			if (EVP_PKEY_fromdata(ctx.get(), &evp_key, EVP_PKEY_PUBLIC_KEY, params.get()) != 1) {
+				throw std::runtime_error("EVP_PKEY_fromdata failed");
+			}
 			return helper::evp_pkey_handle(evp_key);
 #else
-			RSA* rsa = RSA_new();
-			evp_key = EVP_PKEY_new();
+			std::unique_ptr<RSA, decltype(&RSA_free)> rsa(RSA_new(), RSA_free);
+			if (!rsa) { throw std::runtime_error("RSA_new failed"); }
 #if defined(JWT_OPENSSL_1_0_0) && !defined(LIBWOLFSSL_VERSION_HEX)
 			rsa->e = e.release();
 			rsa->n = n.release();
 #else
-			RSA_set0_key(rsa, n.release(), e.release(), nullptr);
+			if (RSA_set0_key(rsa.get(), n.release(), e.release(), nullptr) != 1) {
+				throw std::runtimeruntime_error("RSA_set0_key failed");
+			}
 #endif
-			EVP_PKEY_assign_RSA(evp_key, rsa);
-			return helper::evp_pkey_handle(evp_key);
+			std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)> evp_key(EVP_PKEY_new(), EVP_PKEY_free);
+			if (EVP_PKEY_assign_RSA(evp_key.get(), rsa.get()) != 1) {
+				throw std::runtime_error("EVP_PKEY_assign_RSA failed");
+			}
+			rsa.release();
+			return helper::evp_pkey_handle(evp_key.release());
 #endif
 		}
 
