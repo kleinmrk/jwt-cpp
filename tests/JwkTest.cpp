@@ -76,3 +76,28 @@ TEST(JwkTest, HmacKey) {
 	auto decoded_token = jwt::decode(token);
 	ASSERT_NO_THROW(verifier.verify(decoded_token));
 }
+
+TEST(JwkTest, CustomAlgorithm) {
+	// {"alg":"my-custom-alg","typ":"JWS"}.{"iss":"auth0"}.valid_signature
+	std::string token = "eyJhbGciOiJteS1jdXN0b20tYWxnIiwidHlwIjoiSldTIn0.eyJpc3MiOiJhdXRoMCJ9.dmFsaWRfc2lnbmF0dXJl";
+	std::string secret_key = R"({
+		"kty": "oct",
+		"k": "c2VjcmV0"
+	})";
+
+	struct custom_verification_algorithm {
+		void verify(const std::string& data, const std::string& sig, std::error_code& ec) {}
+	};
+
+	jwt::algorithm_db my_verification_algorithms;
+	my_verification_algorithms.register_algorithm("my-custom-alg", [](const jwt::key&) {
+		return std::make_unique<jwt::algo<custom_verification_algorithm>>(custom_verification_algorithm());
+	});
+	auto verifier = jwt::verifier<jwt::default_clock, jwt::traits::kazuho_picojson>(jwt::default_clock(),
+																					my_verification_algorithms);
+
+	auto jwk = jwt::parse_jwk(secret_key);
+	verifier.allow_key(jwk);
+	auto decoded_token = jwt::decode(token);
+	ASSERT_NO_THROW(verifier.verify(decoded_token));
+}
