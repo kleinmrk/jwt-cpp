@@ -21,9 +21,12 @@ namespace jwt {
 	}
 
 	/**
-	 * Return a builder instance to create a new token
+	 * Create a builder using the default clock
+	 * \return builder instance to create a new token
 	 */
-	inline builder<traits::kazuho_picojson> create() { return builder<traits::kazuho_picojson>(); }
+	inline builder<default_clock, traits::kazuho_picojson> create() {
+		return builder<default_clock, traits::kazuho_picojson>(default_clock{});
+	}
 
 #ifndef JWT_DISABLE_BASE64
 	/**
@@ -40,7 +43,7 @@ namespace jwt {
 
 	/**
 	 * Decode a token
-	 * \tparam Decode is callabled, taking a string_type and returns a string_type.
+	 * \tparam Decode is callable, taking a string_type and returns a string_type.
 	 * It should ensure the padding of the input and then base64url decode and
 	 * return the results.
 	 * \param token Token to decode
@@ -54,6 +57,7 @@ namespace jwt {
 		return decoded_jwt<traits::kazuho_picojson>(token, decode);
 	}
 
+#ifndef JWT_DISABLE_BASE64
 	/**
 	 * Parse a jwk
 	 * \param token JWK Token to parse
@@ -63,7 +67,14 @@ namespace jwt {
 	inline jwk<traits::kazuho_picojson> parse_jwk(const traits::kazuho_picojson::string_type& token) {
 		return jwk<traits::kazuho_picojson>(token);
 	}
+#endif
 
+	template<typename Decode>
+	jwk<traits::kazuho_picojson> parse_jwk(const traits::kazuho_picojson::string_type& token, Decode decode) {
+		return jwk<traits::kazuho_picojson>(token, decode);
+	}
+
+#ifndef JWT_DISABLE_BASE64
 	/**
 	 * Parse a jwks
 	 * \param token JWKs Token to parse
@@ -72,6 +83,12 @@ namespace jwt {
 	 */
 	inline jwks<traits::kazuho_picojson> parse_jwks(const traits::kazuho_picojson::string_type& token) {
 		return jwks<traits::kazuho_picojson>(token);
+	}
+#endif
+
+	template<typename Decode>
+	jwks<traits::kazuho_picojson> parse_jwks(const traits::kazuho_picojson::string_type& token, Decode decode) {
+		return jwks<traits::kazuho_picojson>(token, decode);
 	}
 
 	/**
